@@ -58,7 +58,7 @@ label, label span {
 
 div[data-testid="stVerticalBlock"] > div:has(form) {
     background-color: #ffffff;
-    padding: 2rem 2rem 2.5rem 2rem;
+    padding: 2rem;
     border-radius: 16px;
     box-shadow: 0 20px 45px rgba(0,0,0,0.35);
     max-width: 760px;
@@ -71,27 +71,6 @@ input, textarea {
 
 div[data-baseweb="select"] span {
     color: #000000 !important;
-}
-
-input:disabled {
-    color: #000000 !important;
-    -webkit-text-fill-color: #000000 !important;
-    opacity: 1 !important;
-}
-
-button[kind="primary"],
-button[kind="primary"]:hover,
-button[kind="primary"]:active,
-button[kind="primary"]:focus {
-    background-color: #0f5132 !important;
-    color: #ffffff !important;
-    border-radius: 12px;
-    padding: 0.8rem 1.6rem;
-    font-weight: 800;
-    border: none !important;
-    width: 100%;
-    margin-top: 1.5rem;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
 }
 </style>
 """, unsafe_allow_html=True)
@@ -118,12 +97,7 @@ def load_dims():
         get_dim_modalidade()
     )
 
-try:
-    df_atletas, df_adversarios, df_clubes, df_torneios, df_modalidade = load_dims()
-except Exception as e:
-    st.error("Erro ao conectar com o Google Sheets")
-    st.code(str(e))
-    st.stop()
+df_atletas, df_adversarios, df_clubes, df_torneios, df_modalidade = load_dims()
 
 # =========================
 # TABS
@@ -145,23 +119,36 @@ with tab_partida:
         data = st.date_input("📅 Data da Partida", value=date.today())
 
         atleta = st.selectbox("🎱 Atleta", df_atletas["Atleta"].tolist())
-        clube_atleta = df_atletas.loc[df_atletas["Atleta"] == atleta, "Clube"].iloc[0]
+        clube_atleta = df_atletas.loc[
+            df_atletas["Atleta"] == atleta, "Clube"
+        ].iloc[0]
 
         adversario = st.selectbox("🥊 Adversário", df_adversarios["Adversario"].tolist())
-        clube_adv = df_adversarios.loc[df_adversarios["Adversario"] == adversario, "Clube"].iloc[0]
+        clube_adv = df_adversarios.loc[
+            df_adversarios["Adversario"] == adversario, "Clube"
+        ].iloc[0]
 
+        # 🔥 LISTA DE ARENAS DA DIM_CLUBES
+        arenas = sorted(df_clubes["Arena"].dropna().unique().tolist())
+
+        # Arena padrão = arena do clube do atleta
         arena_padrao = df_clubes.loc[
             df_clubes["Clube"] == clube_atleta, "Arena"
         ].iloc[0]
+
+        arena_index = arenas.index(arena_padrao) if arena_padrao in arenas else 0
+
+        arena = st.selectbox(
+            "🏟️ Arena",
+            arenas,
+            index=arena_index
+        )
 
         torneio = st.selectbox("🏆 Torneio", df_torneios["Torneio"].tolist())
         modalidade = st.selectbox("🎱 Modalidade", df_modalidade["Modalidade"].tolist())
 
         st.text_input("Clube Atleta", clube_atleta, disabled=True)
         st.text_input("Clube Adversário", clube_adv, disabled=True)
-
-        # 🔥 AQUI ESTÁ O AJUSTE
-        arena = st.text_input("Arena", value=arena_padrao)
 
         placar_atleta = st.number_input("Placar Atleta", min_value=0)
         placar_adv = st.number_input("Placar Adversário", min_value=0)
