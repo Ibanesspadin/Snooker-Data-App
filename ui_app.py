@@ -72,26 +72,6 @@ input, textarea {
 div[data-baseweb="select"] span {
     color: #000000 !important;
 }
-
-/* =========================
-   ALERTA TEXTO BRANCO
-========================= */
-div[data-testid="stAlert"] {
-    background: transparent !important;
-    border: none !important;
-    padding: 0 !important;
-    margin-top: 1rem;
-}
-
-div[data-testid="stAlert"] p {
-    color: #ffffff !important;
-    font-weight: 700;
-    text-align: center;
-}
-
-div[data-testid="stAlert"] svg {
-    display: none;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -135,6 +115,8 @@ tab_partida, tab_adv, tab_atleta, tab_torneio, tab_clube, tab_modalidade = st.ta
 # 🎱 PARTIDA
 # =========================
 with tab_partida:
+    msg = st.empty()
+
     with st.form("form_partida"):
         data = st.date_input("📅 Data da Partida", value=date.today())
 
@@ -145,10 +127,7 @@ with tab_partida:
         clube_adv = df_adversarios.loc[df_adversarios["Adversario"] == adversario, "Clube"].iloc[0]
 
         arenas = sorted(df_clubes["Arena"].dropna().unique().tolist())
-        arena_padrao = df_clubes.loc[df_clubes["Clube"] == clube_atleta, "Arena"].iloc[0]
-        arena_index = arenas.index(arena_padrao) if arena_padrao in arenas else 0
-
-        arena = st.selectbox("🏟️ Arena", arenas, index=arena_index)
+        arena = st.selectbox("🏟️ Arena", arenas)
 
         torneio = st.selectbox("🏆 Torneio", df_torneios["Torneio"].tolist())
         modalidade = st.selectbox("🎱 Modalidade", df_modalidade["Modalidade"].tolist())
@@ -177,13 +156,18 @@ with tab_partida:
             maior_tacada,
             modalidade
         ])
-        st.success("Salvo com sucesso!")
+        msg.markdown(
+            "<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>",
+            unsafe_allow_html=True
+        )
         st.rerun()
 
 # =========================
 # 🥊 ADVERSÁRIO
 # =========================
 with tab_adv:
+    msg = st.empty()
+
     with st.form("form_adv"):
         nome = st.text_input("Nome do Adversário")
         apelido = st.text_input("Apelido")
@@ -192,13 +176,15 @@ with tab_adv:
 
     if salvar:
         insert_dim_adversario(nome, apelido, clube)
-        st.success("Salvo com sucesso!")
+        msg.markdown("<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>", unsafe_allow_html=True)
         st.rerun()
 
 # =========================
 # 🎯 ATLETA
 # =========================
 with tab_atleta:
+    msg = st.empty()
+
     with st.form("form_atleta"):
         nome = st.text_input("Nome do Atleta")
         clube = st.selectbox("Clube", df_clubes["Clube"].tolist())
@@ -213,13 +199,15 @@ with tab_atleta:
 
     if salvar:
         insert_dim_atleta(nome, clube, tempo, marca, modelo, tamanho, sola, six, rb)
-        st.success("Salvo com sucesso!")
+        msg.markdown("<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>", unsafe_allow_html=True)
         st.rerun()
 
 # =========================
 # 🏆 TORNEIO
 # =========================
 with tab_torneio:
+    msg = st.empty()
+
     with st.form("form_torneio"):
         nome = st.text_input("Nome do Torneio")
         tipo = st.text_input("Tipo")
@@ -228,13 +216,15 @@ with tab_torneio:
 
     if salvar:
         insert_dim_torneio(nome, tipo, modalidade)
-        st.success("Salvo com sucesso!")
+        msg.markdown("<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>", unsafe_allow_html=True)
         st.rerun()
 
 # =========================
 # 🏟️ CLUBE
 # =========================
 with tab_clube:
+    msg = st.empty()
+
     with st.form("form_clube"):
         nome = st.text_input("Nome do Clube")
         arena = st.text_input("Arena")
@@ -245,18 +235,20 @@ with tab_clube:
 
     if salvar:
         insert_dim_clube(nome, arena, cidade, estado, tipo)
-        st.success("Salvo com sucesso!")
+        msg.markdown("<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>", unsafe_allow_html=True)
         st.rerun()
 
 # =========================
 # 🎱 MODALIDADE
 # =========================
 with tab_modalidade:
+    msg = st.empty()
+
     with st.form("form_modalidade"):
         nome = st.text_input("Nome da Modalidade")
         salvar = st.form_submit_button("💾 SALVAR MODALIDADE")
 
     if salvar:
         insert_dim_modalidade(nome)
-        st.success("Salvo com sucesso!")
+        msg.markdown("<p style='color:white; font-weight:700; text-align:center;'>Salvo com sucesso!</p>", unsafe_allow_html=True)
         st.rerun()
