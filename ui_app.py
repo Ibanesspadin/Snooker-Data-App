@@ -24,11 +24,10 @@ st.set_page_config(
 )
 
 # =========================
-# CSS GLOBAL
+# CSS
 # =========================
 st.markdown("""
 <style>
-/* FUNDO */
 .stApp {
     background-image:
         linear-gradient(rgba(5, 30, 15, 0.88), rgba(5, 30, 15, 0.88)),
@@ -38,14 +37,12 @@ st.markdown("""
     background-attachment: fixed;
 }
 
-/* TÍTULO */
 h1 {
     text-align: center;
     font-weight: 800;
     color: #ffffff !important;
 }
 
-/* SUBTÍTULO */
 .subtitle {
     text-align: center;
     color: #ffffff;
@@ -54,13 +51,11 @@ h1 {
     letter-spacing: 1px;
 }
 
-/* LABELS */
 label, label span {
     color: #ffffff !important;
     font-weight: 600;
 }
 
-/* CARD */
 div[data-testid="stVerticalBlock"] > div:has(form) {
     background-color: #ffffff;
     padding: 2rem;
@@ -70,7 +65,6 @@ div[data-testid="stVerticalBlock"] > div:has(form) {
     margin: auto;
 }
 
-/* INPUTS */
 input, textarea {
     color: #000000 !important;
 }
@@ -80,42 +74,23 @@ div[data-baseweb="select"] span {
 }
 
 /* =========================
-   TABS — TODAS BRANCAS
+   ALERTA TEXTO BRANCO
 ========================= */
-button[data-baseweb="tab"] {
-    color: #ffffff !important;
-    font-weight: 600;
-    opacity: 1 !important;
-    background-color: transparent !important;
-}
-
-/* TAB ATIVA */
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #ffffff !important;
-    font-weight: 800;
-    border-bottom: 3px solid #d90429 !important;
-}
-
-/* HOVER */
-button[data-baseweb="tab"]:hover {
-    color: #ffffff !important;
-    background-color: transparent !important;
-}
-
-/* BOTÃO SALVAR */
-button[kind="primary"],
-button[kind="primary"]:hover,
-button[kind="primary"]:active,
-button[kind="primary"]:focus {
-    background-color: #0f5132 !important;
-    color: #ffffff !important;
-    border-radius: 12px;
-    padding: 0.8rem 1.6rem;
-    font-weight: 800;
+div[data-testid="stAlert"] {
+    background: transparent !important;
     border: none !important;
-    width: 100%;
-    margin-top: 1.5rem;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    padding: 0 !important;
+    margin-top: 1rem;
+}
+
+div[data-testid="stAlert"] p {
+    color: #ffffff !important;
+    font-weight: 700;
+    text-align: center;
+}
+
+div[data-testid="stAlert"] svg {
+    display: none;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -164,4 +139,124 @@ with tab_partida:
         data = st.date_input("📅 Data da Partida", value=date.today())
 
         atleta = st.selectbox("🎱 Atleta", df_atletas["Atleta"].tolist())
-        clube_atleta = df_atletas.loc[df_atletas["Atleta"] == atleta, "Clube"]_]()
+        clube_atleta = df_atletas.loc[df_atletas["Atleta"] == atleta, "Clube"].iloc[0]
+
+        adversario = st.selectbox("🥊 Adversário", df_adversarios["Adversario"].tolist())
+        clube_adv = df_adversarios.loc[df_adversarios["Adversario"] == adversario, "Clube"].iloc[0]
+
+        arenas = sorted(df_clubes["Arena"].dropna().unique().tolist())
+        arena_padrao = df_clubes.loc[df_clubes["Clube"] == clube_atleta, "Arena"].iloc[0]
+        arena_index = arenas.index(arena_padrao) if arena_padrao in arenas else 0
+
+        arena = st.selectbox("🏟️ Arena", arenas, index=arena_index)
+
+        torneio = st.selectbox("🏆 Torneio", df_torneios["Torneio"].tolist())
+        modalidade = st.selectbox("🎱 Modalidade", df_modalidade["Modalidade"].tolist())
+
+        st.text_input("Clube Atleta", clube_atleta, disabled=True)
+        st.text_input("Clube Adversário", clube_adv, disabled=True)
+
+        placar_atleta = st.number_input("Placar Atleta", min_value=0)
+        placar_adv = st.number_input("Placar Adversário", min_value=0)
+        maior_tacada = st.number_input("🔥 Maior Tacada", min_value=0)
+
+        salvar = st.form_submit_button("💾 SALVAR PARTIDA")
+
+    if salvar:
+        insert_fat_partida([
+            data.strftime("%d/%m/%Y"),
+            atleta,
+            adversario,
+            clube_atleta,
+            clube_adv,
+            arena,
+            torneio,
+            data.year,
+            placar_atleta,
+            placar_adv,
+            maior_tacada,
+            modalidade
+        ])
+        st.success("Salvo com sucesso!")
+        st.rerun()
+
+# =========================
+# 🥊 ADVERSÁRIO
+# =========================
+with tab_adv:
+    with st.form("form_adv"):
+        nome = st.text_input("Nome do Adversário")
+        apelido = st.text_input("Apelido")
+        clube = st.selectbox("Clube", df_clubes["Clube"].tolist())
+        salvar = st.form_submit_button("💾 SALVAR ADVERSÁRIO")
+
+    if salvar:
+        insert_dim_adversario(nome, apelido, clube)
+        st.success("Salvo com sucesso!")
+        st.rerun()
+
+# =========================
+# 🎯 ATLETA
+# =========================
+with tab_atleta:
+    with st.form("form_atleta"):
+        nome = st.text_input("Nome do Atleta")
+        clube = st.selectbox("Clube", df_clubes["Clube"].tolist())
+        tempo = st.number_input("Tempo de Jogo (anos)", min_value=0)
+        marca = st.text_input("Marca do Taco")
+        modelo = st.text_input("Modelo do Taco")
+        tamanho = st.text_input("Tamanho do Taco")
+        sola = st.text_input("Sola do Taco")
+        six = st.number_input("Maior Tacada Six Red's", min_value=0)
+        rb = st.number_input("Maior Tacada Regra Brasileira", min_value=0)
+        salvar = st.form_submit_button("💾 SALVAR ATLETA")
+
+    if salvar:
+        insert_dim_atleta(nome, clube, tempo, marca, modelo, tamanho, sola, six, rb)
+        st.success("Salvo com sucesso!")
+        st.rerun()
+
+# =========================
+# 🏆 TORNEIO
+# =========================
+with tab_torneio:
+    with st.form("form_torneio"):
+        nome = st.text_input("Nome do Torneio")
+        tipo = st.text_input("Tipo")
+        modalidade = st.selectbox("Modalidade", df_modalidade["Modalidade"].tolist())
+        salvar = st.form_submit_button("💾 SALVAR TORNEIO")
+
+    if salvar:
+        insert_dim_torneio(nome, tipo, modalidade)
+        st.success("Salvo com sucesso!")
+        st.rerun()
+
+# =========================
+# 🏟️ CLUBE
+# =========================
+with tab_clube:
+    with st.form("form_clube"):
+        nome = st.text_input("Nome do Clube")
+        arena = st.text_input("Arena")
+        cidade = st.text_input("Cidade")
+        estado = st.text_input("Estado")
+        tipo = st.text_input("Tipo")
+        salvar = st.form_submit_button("💾 SALVAR CLUBE")
+
+    if salvar:
+        insert_dim_clube(nome, arena, cidade, estado, tipo)
+        st.success("Salvo com sucesso!")
+        st.rerun()
+
+# =========================
+# 🎱 MODALIDADE
+# =========================
+with tab_modalidade:
+    with st.form("form_modalidade"):
+        nome = st.text_input("Nome da Modalidade")
+        salvar = st.form_submit_button("💾 SALVAR MODALIDADE")
+
+    if salvar:
+        insert_dim_modalidade(nome)
+        st.success("Salvo com sucesso!")
+        st.rerun()
