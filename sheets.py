@@ -3,7 +3,7 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 @st.cache_resource
-def connect_sheets():
+def connect_sheet():
     creds = Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
         scopes=[
