@@ -24,6 +24,12 @@ st.set_page_config(
 )
 
 # =========================
+# FUNÇÃO PADRÃO DE SUCESSO
+# =========================
+def sucesso():
+    st.success("Salvo com sucesso!")
+
+# =========================
 # CSS
 # =========================
 st.markdown("""
@@ -72,6 +78,13 @@ input, textarea {
 div[data-baseweb="select"] span {
     color: #000000 !important;
 }
+
+/* SUCCESS EM BRANCO */
+div[data-testid="stAlert"] p {
+    color: #ffffff !important;
+    font-weight: 800;
+    text-align: center;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -119,30 +132,20 @@ with tab_partida:
         data = st.date_input("📅 Data da Partida", value=date.today())
 
         atleta = st.selectbox("🎱 Atleta", df_atletas["Atleta"].tolist())
-        clube_atleta = df_atletas.loc[
-            df_atletas["Atleta"] == atleta, "Clube"
-        ].iloc[0]
+        clube_atleta = df_atletas.loc[df_atletas["Atleta"] == atleta, "Clube"].iloc[0]
 
         adversario = st.selectbox("🥊 Adversário", df_adversarios["Adversario"].tolist())
         clube_adv = df_adversarios.loc[
             df_adversarios["Adversario"] == adversario, "Clube"
         ].iloc[0]
 
-        # 🔥 LISTA DE ARENAS DA DIM_CLUBES
         arenas = sorted(df_clubes["Arena"].dropna().unique().tolist())
-
-        # Arena padrão = arena do clube do atleta
         arena_padrao = df_clubes.loc[
             df_clubes["Clube"] == clube_atleta, "Arena"
         ].iloc[0]
-
         arena_index = arenas.index(arena_padrao) if arena_padrao in arenas else 0
 
-        arena = st.selectbox(
-            "🏟️ Arena",
-            arenas,
-            index=arena_index
-        )
+        arena = st.selectbox("🏟️ Arena", arenas, index=arena_index)
 
         torneio = st.selectbox("🏆 Torneio", df_torneios["Torneio"].tolist())
         modalidade = st.selectbox("🎱 Modalidade", df_modalidade["Modalidade"].tolist())
@@ -171,7 +174,7 @@ with tab_partida:
             maior_tacada,
             modalidade
         ])
-        st.success("🎉 Partida registrada com sucesso!")
+        sucesso()
         st.rerun()
 
 # =========================
@@ -186,7 +189,7 @@ with tab_adv:
 
     if salvar:
         insert_dim_adversario(nome, apelido, clube)
-        st.success("✅ Adversário cadastrado")
+        sucesso()
         st.rerun()
 
 # =========================
@@ -207,7 +210,7 @@ with tab_atleta:
 
     if salvar:
         insert_dim_atleta(nome, clube, tempo, marca, modelo, tamanho, sola, six, rb)
-        st.success("✅ Atleta cadastrado")
+        sucesso()
         st.rerun()
 
 # =========================
@@ -222,7 +225,7 @@ with tab_torneio:
 
     if salvar:
         insert_dim_torneio(nome, tipo, modalidade)
-        st.success("✅ Torneio cadastrado")
+        sucesso()
         st.rerun()
 
 # =========================
@@ -239,7 +242,7 @@ with tab_clube:
 
     if salvar:
         insert_dim_clube(nome, arena, cidade, estado, tipo)
-        st.success("✅ Clube cadastrado")
+        sucesso()
         st.rerun()
 
 # =========================
@@ -252,5 +255,5 @@ with tab_modalidade:
 
     if salvar:
         insert_dim_modalidade(nome)
-        st.success("✅ Modalidade cadastrada")
+        sucesso()
         st.rerun()
