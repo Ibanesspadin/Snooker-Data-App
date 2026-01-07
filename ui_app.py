@@ -6,9 +6,6 @@ from repository import (
     get_dim_clubes,
     get_dim_torneios,
     get_dim_modalidade,
-    get_clube_by_atleta,
-    get_clube_by_adversario,
-    get_arena_by_clube,
     insert_fat_partida,
     insert_dim_atleta,
     insert_dim_adversario,
@@ -27,12 +24,10 @@ st.set_page_config(
 )
 
 # =========================
-# CSS FINAL – BOTÃO FIXO
+# CSS
 # =========================
 st.markdown("""
 <style>
-
-/* FUNDO */
 .stApp {
     background-image:
         linear-gradient(rgba(5, 30, 15, 0.88), rgba(5, 30, 15, 0.88)),
@@ -42,14 +37,12 @@ st.markdown("""
     background-attachment: fixed;
 }
 
-/* TÍTULO */
 h1 {
     text-align: center;
     font-weight: 800;
     color: #ffffff !important;
 }
 
-/* SUBTÍTULO */
 .subtitle {
     text-align: center;
     color: #ffffff;
@@ -58,13 +51,11 @@ h1 {
     letter-spacing: 1px;
 }
 
-/* LABELS */
 label, label span {
     color: #ffffff !important;
     font-weight: 600;
 }
 
-/* CARD */
 div[data-testid="stVerticalBlock"] > div:has(form) {
     background-color: #ffffff;
     padding: 2rem 2rem 2.5rem 2rem;
@@ -74,26 +65,20 @@ div[data-testid="stVerticalBlock"] > div:has(form) {
     margin: auto;
 }
 
-/* INPUTS */
 input, textarea {
     color: #000000 !important;
 }
 
-/* SELECT */
 div[data-baseweb="select"] span {
     color: #000000 !important;
 }
 
-/* INPUT DESABILITADO */
 input:disabled {
     color: #000000 !important;
     -webkit-text-fill-color: #000000 !important;
     opacity: 1 !important;
 }
 
-/* =========================
-   BOTÃO FIXO – SEM HOVER
-========================= */
 button[kind="primary"],
 button[kind="primary"]:hover,
 button[kind="primary"]:active,
@@ -111,7 +96,6 @@ button[kind="primary"]:focus {
     outline: none !important;
 }
 
-/* TABS */
 button[data-baseweb="tab"] {
     color: #ffffff !important;
     font-weight: 600;
@@ -121,7 +105,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
     border-bottom: 3px solid #d90429 !important;
     font-weight: 800;
 }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -135,13 +118,30 @@ st.markdown(
 )
 
 # =========================
-# LOAD DIMS
+# LOAD DATA (CACHE + SAFE)
 # =========================
-df_atletas = get_dim_atletas()
-df_adversarios = get_dim_adversarios()
-df_clubes = get_dim_clubes()
-df_torneios = get_dim_torneios()
-df_modalidade = get_dim_modalidade()
+@st.cache_data
+def load_dims():
+    return (
+        get_dim_atletas(),
+        get_dim_adversarios(),
+        get_dim_clubes(),
+        get_dim_torneios(),
+        get_dim_modalidade()
+    )
+
+try:
+    (
+        df_atletas,
+        df_adversarios,
+        df_clubes,
+        df_torneios,
+        df_modalidade
+    ) = load_dims()
+except Exception as e:
+    st.error("❌ Erro ao conectar com o Google Sheets")
+    st.code(str(e))
+    st.stop()
 
 # =========================
 # TABS
@@ -161,13 +161,24 @@ tab_partida, tab_adv, tab_atleta, tab_torneio, tab_clube, tab_modalidade = st.ta
 with tab_partida:
     with st.form("form_partida"):
         data = st.date_input("📅 Data da Partida", value=date.today())
+
         atleta = st.selectbox("🎱 Atleta", df_atletas["Atleta"].tolist())
-        clube_atleta = get_clube_by_atleta(atleta)
+        clube_atleta = (
+            df_atletas.loc[df_atletas["Atleta"] == atleta, "Clube"]
+            .iloc[0] if not df_atletas.empty else ""
+        )
 
         adversario = st.selectbox("🥊 Adversário", df_adversarios["Adversario"].tolist())
-        clube_adv = get_clube_by_adversario(adversario)
+        clube_adv = (
+            df_adversarios.loc[df_adversarios["Adversario"] == adversario, "Clube"]
+            .iloc[0] if not df_adversarios.empty else ""
+        )
 
-        arena = get_arena_by_clube(clube_atleta)
+        arena = (
+            df_clubes.loc[df_clubes["Clube"] == clube_atleta, "Arena"]
+            .iloc[0] if not df_clubes.empty else ""
+        )
+
         torneio = st.selectbox("🏆 Torneio", df_torneios["Torneio"].tolist())
         modalidade = st.selectbox("🎱 Modalidade", df_modalidade["Modalidade"].tolist())
 
@@ -197,6 +208,7 @@ with tab_partida:
             modalidade
         ])
         st.success("🎉 Partida registrada com sucesso!")
+        st.rerun()
 
 # =========================
 # 🥊 ADVERSÁRIO
