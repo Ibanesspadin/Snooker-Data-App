@@ -1,5 +1,5 @@
 import pandas as pd
-from sheets import connect_sheets
+from sheets import connect_sheet
 
 NOME_PLANILHA = "Snooker_BI_Oficial"
 
@@ -7,63 +7,32 @@ NOME_PLANILHA = "Snooker_BI_Oficial"
 # CONEXÃO / WORKSHEET
 # =========================
 def get_worksheet(nome_aba):
-    client = connect_sheets()
+    client = connect_sheet()
     spreadsheet = client.open(NOME_PLANILHA)
     return spreadsheet.worksheet(nome_aba)
 
 # =========================
-# DIMENSÕES - GET (BLINDADAS)
+# DIMENSÕES - GET
 # =========================
 def get_dim_atletas():
     sheet = get_worksheet("DIM_ATLETAS")
-    return pd.DataFrame(
-        sheet.get_all_records(
-            expected_headers=[
-                "Atleta",
-                "Clube",
-                "Tempo_De_Jogo_Anos",
-                "Taco_Marca",
-                "Taco_Modelo",
-                "Taco_Tamanho",
-                "Taco_Sola",
-                "Maior_Tacada_Six_Red's",
-                "Maior_Tacada_Regra_Brasileira",
-                "Foto"
-            ]
-        )
-    )
+    return pd.DataFrame(sheet.get_all_records())
 
 def get_dim_adversarios():
     sheet = get_worksheet("DIM_ADVERSARIOS")
-    return pd.DataFrame(
-        sheet.get_all_records(
-            expected_headers=["Adversario", "Apelido", "Clube"]
-        )
-    )
+    return pd.DataFrame(sheet.get_all_records())
 
 def get_dim_clubes():
     sheet = get_worksheet("DIM_CLUBES")
-    return pd.DataFrame(
-        sheet.get_all_records(
-            expected_headers=["Clube", "Arena", "Cidade", "Estado", "Tipo"]
-        )
-    )
+    return pd.DataFrame(sheet.get_all_records())
 
 def get_dim_torneios():
     sheet = get_worksheet("DIM_TORNEIOS")
-    return pd.DataFrame(
-        sheet.get_all_records(
-            expected_headers=["Torneio", "Tipo", "Modalidade"]
-        )
-    )
+    return pd.DataFrame(sheet.get_all_records())
 
 def get_dim_modalidade():
     sheet = get_worksheet("DIM_MODALIDADE")
-    return pd.DataFrame(
-        sheet.get_all_records(
-            expected_headers=["Modalidade"]
-        )
-    )
+    return pd.DataFrame(sheet.get_all_records())
 
 # =========================
 # FAT - INSERT
@@ -77,24 +46,18 @@ def insert_fat_partida(linha):
 # =========================
 def get_clube_by_atleta(nome_atleta):
     df = get_dim_atletas()
-    if df.empty:
-        return None
     row = df[df["Atleta"] == nome_atleta]
-    return row.iloc[0]["Clube"] if not row.empty else None
+    return row.iloc[0]["Clube"] if not row.empty else ""
 
 def get_clube_by_adversario(nome_adversario):
     df = get_dim_adversarios()
-    if df.empty:
-        return None
     row = df[df["Adversario"] == nome_adversario]
-    return row.iloc[0]["Clube"] if not row.empty else None
+    return row.iloc[0]["Clube"] if not row.empty else ""
 
 def get_arena_by_clube(clube):
     df = get_dim_clubes()
-    if df.empty:
-        return None
     row = df[df["Clube"] == clube]
-    return row.iloc[0]["Arena"] if not row.empty else None
+    return row.iloc[0]["Arena"] if not row.empty else ""
 
 # =========================
 # DIMENSÕES - INSERT
@@ -121,7 +84,7 @@ def insert_dim_atleta(
         taco_sola,
         maior_six,
         maior_rb,
-        ""  # Foto (manual)
+        ""
     ])
 
 def insert_dim_adversario(adversario, apelido, clube):
