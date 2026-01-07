@@ -92,6 +92,27 @@ div[data-testid="stAlert"] p {
 div[data-testid="stAlert"] svg {
     display: none;
 }
+
+/* =========================
+   TABS — TODAS BRANCAS
+========================= */
+button[data-baseweb="tab"] {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    font-weight: 600;
+    background: transparent !important;
+}
+
+button[data-baseweb="tab"]:hover {
+    color: #ffffff !important;
+    background: transparent !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #ffffff !important;
+    font-weight: 800;
+    border-bottom: 3px solid #ffffff !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
